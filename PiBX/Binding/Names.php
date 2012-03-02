@@ -251,7 +251,7 @@ class PiBX_Binding_Names {
         return $attributeName . 'List';
     }
 
-    private static function nameAlreadyEndsWithWordList($name) {
+    public static function nameAlreadyEndsWithWordList($name) {
         $lowercaseName = strtolower($name);
 
         if ($lowercaseName == 'list') {
