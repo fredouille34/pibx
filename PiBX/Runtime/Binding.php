@@ -276,7 +276,24 @@ class PiBX_Runtime_Binding {
             $typeNodes = $this->xml->xpath('/binding/mapping[@type-name="'.$name.'"]');
 
             if (count($typeNodes) == 0) {
-                return '';
+                // third lookup in Structure
+                $typeNodes = $this->xml->xpath('/binding/mapping/structure[@name="'.$name.'"]');
+
+                if (count($typeNodes) != 0) {
+                    // we're interested in the first match only
+                    list($mappingElement) = $typeNodes;
+                    $attributes = $mappingElement->attributes();
+                    $classname = (string)$attributes['map-as'];    
+                    return $classname;
+                 }
+                 else {
+		   // Make a new search with a capitalised first letter
+		   // I don't know when it is needed...
+                    if(!ctype_upper($name{0})) {
+                        return $this->getClassnameForName(ucfirst($name));
+                    }
+                    return '';
+                }
             }
         }
 
