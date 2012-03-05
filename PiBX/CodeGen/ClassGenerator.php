@@ -219,7 +219,7 @@ class PiBX_CodeGen_ClassGenerator implements PiBX_AST_Visitor_VisitorAbstract {
     }
 
     public function visitCollectionItem(PiBX_AST_CollectionItem $collectionItem) {        
-        $name = PiBX_Binding_Names::getListAttributeName($collectionItem->getName());
+        $name = PiBX_Binding_Names::getAttributeName($collectionItem);
 
         $this->addPrivateMember($name);
         $this->addSetterFor($collectionItem);//TODO: add parameter $name, to pass pre-defined name?
@@ -405,10 +405,8 @@ class PiBX_CodeGen_ClassGenerator implements PiBX_AST_Visitor_VisitorAbstract {
 
     public function visitTypeAttributeEnter(PiBX_AST_TypeAttribute $typeAttribute) {
         if ($typeAttribute->countChildren() == 0) {
-            $name = $typeAttribute->getName();
-            $type = $typeAttribute->getType();
             // base type attribute
-            $attributeName = PiBX_Binding_Names::getAttributeName($name);
+            $attributeName = PiBX_Binding_Names::getAttributeName($typeAttribute);
             
             $this->addPrivateMember($attributeName);
             $this->addSetterFor($typeAttribute);
@@ -421,15 +419,12 @@ class PiBX_CodeGen_ClassGenerator implements PiBX_AST_Visitor_VisitorAbstract {
     }
 
     protected function addSetterFor(PiBX_AST_Tree $tree) {
-        $name = $tree->getName();
         $type = $tree->getType();
-        $attributeName = PiBX_Binding_Names::getAttributeName($name);
-        $methodName    = PiBX_Binding_Names::getCamelCasedName($name);
+        $attributeName = PiBX_Binding_Names::getAttributeName($tree);
         $typeCheckCode = '';
+        $setter = PiBX_Binding_Names::createSetterNameFor($tree);
         
         if ($tree instanceof PiBX_AST_CollectionItem) {
-            $methodName = $this->buildPlural($methodName);
-            $attributeName .= 'List';
             $type = $this->TYPEHINT_ARRAY;
             if ($this->doTypeChecks) {
                 $typeCheckCode = $this->typeChecks->getListTypeCheckFor($tree, $attributeName);
@@ -450,23 +445,16 @@ class PiBX_CodeGen_ClassGenerator implements PiBX_AST_Visitor_VisitorAbstract {
         $parameter = array(array($attributeName => $type));
         $body = $typeCheckCode . '$this->' . $attributeName . ' = $' . $attributeName . ';';
         
-        $this->addPublicMethod('set' . $methodName, $parameter, $body);
+        $this->addPublicMethod($setter, $parameter, $body);
     }
 
     protected function addGetterFor(PiBX_AST_Tree $tree) {
-        $name = $tree->getName();
-        $type = $tree->getType();
-        $attributeName = PiBX_Binding_Names::getAttributeName($name);
-        $methodName    = PiBX_Binding_Names::getCamelCasedName($name);
-
-        if ($tree instanceof PiBX_AST_CollectionItem) {
-            $methodName = $this->buildPlural($methodName);
-            $attributeName .= 'List';
-        }
+        $getter = PiBX_Binding_Names::createGetterNameFor($tree);
+        $attributeName = PiBX_Binding_Names::getAttributeName($tree);
 
         $body = 'return $this->' . $attributeName . ';';
         
-        $this->addPublicMethod('get' . $methodName, array(), $body);
+        $this->addPublicMethod($getter, array(), $body);
     }
     
     public function visitTypeAttributeLeave(PiBX_AST_TypeAttribute $typeAttribute) {
