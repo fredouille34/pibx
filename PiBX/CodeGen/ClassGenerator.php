@@ -350,8 +350,7 @@ class PiBX_CodeGen_ClassGenerator implements PiBX_AST_Visitor_VisitorAbstract {
         $this->currentClassName = PiBX_Binding_Names::createClassnameFor($type);
         $this->addClass($this->currentClassName);
 
-        if ( !$type->hasChildren() ) {
-            $methodName = PiBX_Binding_Names::getCamelCasedName($name);
+        if ( !$type->hasChildren() ) {            
             
             if (!PiBX_Util_XsdType::isBaseType($typesType)) {
                 // complexTypes (i.e. classes) have to be type-hinted
