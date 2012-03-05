@@ -219,39 +219,33 @@ class PiBX_Binding_Names {
      *
      * Strips off "-" and "_" characters in a name.
      * 
-     * @param string $name
+     * @param PiBX_AST_Tree $tree
      * @return string
      */
-    public static function getAttributeName($name) {
-        $camelCasedName = self::combineNamePartsCamelCased($name);//self::getCamelCasedName($name);
+    public static function getAttributeName(PiBX_AST_Tree $tree) {
+    
+        $name=$tree->getName();
+	
+        $attributeName = self::combineNamePartsCamelCased($name);//self::getCamelCasedName($name);
         
         $firstTwoLettersOfOriginalName = substr($name, 0, 2);
-        $firstTwoLettersOfCamelCasedName = substr($camelCasedName, 0, 2);
+        $firstTwoLettersOfCamelCasedName = substr($attributeName, 0, 2);
 
-        if ($firstTwoLettersOfOriginalName == strtoupper($firstTwoLettersOfCamelCasedName)) {
-            return $camelCasedName;
+        if ($firstTwoLettersOfOriginalName != strtoupper($firstTwoLettersOfCamelCasedName)) {
+          $attributeName=lcfirst($attributeName);
         }
-        
-        return lcfirst($camelCasedName);
+		
+        if ($tree instanceof PiBX_AST_CollectionItem) {
+		  if (!self::nameAlreadyEndsWithWordList($attributeName)) {
+		    $attributeName=$attributeName . 'List';
+          }
+        }
+        return $attributeName;
+		
     }
 
-    /**
-     * Creates a valid name for a list attribute.
-     *
-     * @param string $name
-     * @return string
-     */
-    public static function getListAttributeName($name) {
-        $attributeName = self::getAttributeName($name);
 
-        if (self::nameAlreadyEndsWithWordList($attributeName)) {
-            return $attributeName;
-        }
-        
-        return $attributeName . 'List';
-    }
-
-    public static function nameAlreadyEndsWithWordList($name) {
+    private static function nameAlreadyEndsWithWordList($name) {
         $lowercaseName = strtolower($name);
 
         if ($lowercaseName == 'list') {
@@ -272,12 +266,18 @@ class PiBX_Binding_Names {
     /**
      * A very naive implemantation to create a plural version of the given name.
      * It concats a "s" on a name if applicable, i.e. "item" gets "items" and so on.
+	 * ItemList will remains ItemList
      * Or replaces a trailing "y" with "ies", i.e. "country" gets "countries".
      * 
      * @param string $name
      * @return string Plural of $name
      */
     private static function getCollectionName($name) {
+	
+        if (self::nameAlreadyEndsWithWordList($name)) {
+            return $name;
+        }
+    
         $lastLetterInLowerCase = strtolower(substr($name, -1));
         
         if ($lastLetterInLowerCase == 'y') {
