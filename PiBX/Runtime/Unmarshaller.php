@@ -99,6 +99,7 @@ class PiBX_Runtime_Unmarshaller {
         if ($count == 0) {
             if ($ast instanceof PiBX_AST_Structure) {
                 $newObject = $this->parseStructure($xml, $ast, $parentObject);
+                return $newObject;
             } else {
                 throw new RuntimeException('Not supported yet');
             }
@@ -126,7 +127,9 @@ class PiBX_Runtime_Unmarshaller {
                 }
             }
         }
-        return $newObject;
+    
+	// Don't remember why but usefull !!!
+        return $parentObject;
     }
 
     /**
@@ -156,7 +159,10 @@ class PiBX_Runtime_Unmarshaller {
                 $parsedObject = $this->parseXml($xml, $structAst, $newObject);
                 $setter = $ast->getSetMethod();
                 
-                $parentObject->$setter( $parsedObject );
+    	// No need to set nothing...
+                if($parsedObject!=null) {
+                    $parentObject->$setter( $parsedObject );
+                 }
             } else {
                 return $parentObject;
             }
@@ -244,7 +250,11 @@ class PiBX_Runtime_Unmarshaller {
                 if ($itemCount > 0) {
                     // collection items/nodes are directly in the current node
                     for ($j = 0; $j < $itemCount; $j++) {
-                        $newObject = new $class();
+    	    
+                        //Sometimes class was null...
+                        if($class!=null) {
+                          $newObject = new $class();
+                        }
                         $listNode = $xml->{$collectionName}->{$name}[$j];
                         
                         $list[] = $this->parseXml($listNode, $structAst, $newObject);
@@ -295,13 +305,33 @@ class PiBX_Runtime_Unmarshaller {
                 if ($itemCount > 0) {
                     // collection items/nodes are directly in the current node
                     for ($j = 0; $j < $itemCount; $j++) {
-                        $newObject = new $class();
+                        //Sometimes class was null...
+    		if($class!=null) {
+                            $newObject = new $class();
+                        }
                         $listNode = $xml->{$name}[$j];
                         
                         $list[] = $this->parseXml($listNode, $structAst, $newObject);
                     }
                 }
-            } else {
+
+            }
+			 elseif ($child instanceof PiBX_AST_CollectionItem) {
+
+                $name = $child->getName();
+                $itemCount = count($xml->{$collectionName}->{$name});
+
+                if ($itemCount > 0) {
+                    for ($j = 0; $j < $itemCount; $j++) {
+                        $listNode = $xml->{$collectionName}->{$name}[$j];
+
+                        $list[] = $this->parseXml($listNode, $ast, $parentObject);
+                    }
+                }
+
+            } 
+			else {
+
                 throw new RuntimeException('Invalid <collection>');
             }
         }
