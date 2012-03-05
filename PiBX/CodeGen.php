@@ -71,6 +71,7 @@ class PiBX_CodeGen {
         $typeList = $creator->getTypeList();
 
         // phase 3
+        /*
         print "Optimizing abstract syntax tree\n";
         print "    Before: " . count($typeList) . " type(s)\n";
         $usages = $typeUsage->getTypeUsages();
@@ -78,10 +79,11 @@ class PiBX_CodeGen {
         $optimizer = new PiBX_CodeGen_ASTOptimizer($typeList, $typeUsage);
         $typeList = $optimizer->optimize();
         print "    After:  " . count($typeList) . " type(s)\n";
-
+        */
+        
         // phase 4
         print "Creating binding.xml\n";
-        $b = new PiBX_Binding_Creator();
+        $b = new PiBX_Binding_Creator($typeList);
         
         foreach ($typeList as &$type) {
             $type->accept($b);
