@@ -91,7 +91,19 @@ class PiBX_Runtime_Marshaller {
 
         $classToMarshal = get_class($object);
         $ast = $this->binding->getASTForClass($classToMarshal);
+
         $xml = $this->marshalObject($object, $ast);
+
+        // To remove the empty node
+        $xmlPath = new DOMXPath($this->dom);
+        $xmlNullNodes = $xmlPath->query('//*[not(node())]');
+                
+        foreach($xmlNullNodes as $node) {
+            if(!$node->hasAttributes()) {
+                $node->parentNode->removeChild($node);
+            }
+        }
+
 
         return trim($this->dom->saveXML());
     }
@@ -104,19 +116,41 @@ class PiBX_Runtime_Marshaller {
      * @param PiBX_AST_Tree $ast object's AST
      * @return void
      */
-    private function marshalObject($object, PiBX_AST_Tree $ast) {
-        $astName = $ast->getName();
-        
+    /**
+     * Converts the given parameter $object into its XML representation corresponding
+     * to its AST.
+     * 
+     * @param object $object The object to marshal
+     * @param PiBX_AST_Tree $ast object's AST
+     * @return void
+     */
+    private function marshalObject($object, PiBX_AST_Tree $ast, $nameToUse) {
+
+    $astName = $ast->getName();
         $lastNode = $this->currentDomNode;
         
         if ($astName != '') {
             // for every named element, a new node in the resulting xml-tree is created
-            $this->currentDomNode = $this->dom->createElement($astName);
+
+	    // In some cases the astName is the type of the element not its name...
+            if(isset($nameToUse)) {
+                $this->currentDomNode = $this->dom->createElement($nameToUse);
+            }
+            else {
+                $this->currentDomNode = $this->dom->createElement($astName);			  
+            }
             $this->parentDomNode->appendChild($this->currentDomNode);
         } else {
             // "anonymous" elements are just chained down. No new node has to be created
             $this->currentDomNode = $this->parentDomNode;
         }
+
+        // No need to go further
+        if(!isset($object)) {
+            return;
+        }
+		
+		
 
         if ($ast instanceof PiBX_AST_Type ) {
             $this->marshalType($object, $ast);
@@ -220,8 +254,11 @@ class PiBX_Runtime_Marshaller {
             $obj = $object->$getter();
             $classname = $this->binding->getClassnameForName($ast->getName());
             $structureAst = $this->binding->getASTForClass($classname);
-            
-            $this->marshalObject($obj, $structureAst);
+
+
+            // The name of the element must be passed by parameter otherwise we can't find it after            
+            $this->marshalObject($obj, $structureAst,$ast->getName());
+
         }
         
         $this->parentDomNode = $lastNode;
