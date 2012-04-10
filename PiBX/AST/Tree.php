@@ -73,7 +73,8 @@ abstract class PiBX_AST_Tree {
 
     public function get($index) {
         if (!isset($this->children[$index])) {
-            throw new RuntimeException('Invalid child index "'.$index.'"');
+          return null;
+//            throw new RuntimeException('Invalid child index "'.$index.'"');
         }
         return $this->children[$index];
     }
