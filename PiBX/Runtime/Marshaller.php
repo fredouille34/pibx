@@ -116,14 +116,6 @@ class PiBX_Runtime_Marshaller {
      * @param PiBX_AST_Tree $ast object's AST
      * @return void
      */
-    /**
-     * Converts the given parameter $object into its XML representation corresponding
-     * to its AST.
-     * 
-     * @param object $object The object to marshal
-     * @param PiBX_AST_Tree $ast object's AST
-     * @return void
-     */
     private function marshalObject($object, PiBX_AST_Tree $ast, $nameToUse) {
 
     $astName = $ast->getName();
