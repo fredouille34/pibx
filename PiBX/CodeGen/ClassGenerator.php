@@ -430,10 +430,12 @@ class PiBX_CodeGen_ClassGenerator implements PiBX_AST_Visitor_VisitorAbstract {
             }
         } elseif ($tree instanceof PiBX_AST_Enumeration) {
             $firstEnumerationValue = $tree->get(0);
-            // the type is stored in the actual EnumerationValue nodes, not in the Enumeration itself
-            $type = $firstEnumerationValue->getType();
-            if ($this->doTypeChecks) {
-                $typeCheckCode = $this->typeChecks->getEnumerationTypeCheckFor($tree, $attributeName);
+            if(isset($firstEnumerationValue)) {
+              // the type is stored in the actual EnumerationValue nodes, not in the Enumeration itself
+              $type = $firstEnumerationValue->getType();
+              if ($this->doTypeChecks) {
+                  $typeCheckCode = $this->typeChecks->getEnumerationTypeCheckFor($tree, $attributeName);
+              }
             }
         } else {
             if ($this->doTypeChecks) {
