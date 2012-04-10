@@ -184,6 +184,10 @@ class PiBX_CodeGen_SchemaParser {
                 // annotations are ignored at the moment
                 // plans are, to add them as comments in the generated classes
                 continue;
+            } elseif ($name == 'minLength') {
+                continue;
+            } elseif ($name == 'maxLength') {
+                continue;
             } else {
                 throw new RuntimeException('Schema element "' . $name . '" not supported at the moment');
             }
