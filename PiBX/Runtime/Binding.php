@@ -247,6 +247,16 @@ class PiBX_Runtime_Binding {
                     $newPart->setStyle($style);
                     $newPart->setSetMethod($setMethod);
                     $newPart->setGetMethod($getMethod);
+                } elseif ($part instanceof PiBX_AST_Structure) {
+                    $newPart = new PiBX_AST_StructureElement($name);
+                    $style = (string)$attributes['style'];
+                    $testMethod = (string)$attributes['test-method'];
+                    $getMethod = (string)$attributes['get-method'];
+                    $setMethod = (string)$attributes['set-method'];
+                    $newPart->setStyle($style);
+                    $newPart->setTestMethod($testMethod);
+                    $newPart->setGetMethod($getMethod);
+                    $newPart->setSetMethod($setMethod);
                 }
                 $this->elementAsts[$name] = $newPart;
             } else {
